@@ -1,0 +1,5 @@
+databaseChangeLog:
+- include:
+    file: /org/quartz/impl/jdbcjobstore/liquibase.quartz.init.xml
+- includeAll:
+    path: db/changelog/DDL/

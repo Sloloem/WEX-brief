@@ -1,0 +1,84 @@
+openapi: 3.1.0
+info:
+  title: Transaction DB
+  description: |
+    This API allows storing and retrieving logged transactions with optional currency conversion
+  version: 1.0.0
+paths:
+  /transaction:
+    post:
+      tags:
+        - transaction
+      operationId: storeNewTransaction
+      description: Stores a new transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/newTransactionRequest"
+      responses:
+        200:
+          description: Transaction object complete with unique generated ID.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/transactionResponse"
+  /transaction/{transactionId}:
+    get:
+      tags:
+        - transaction
+      operationId: getConvertedTransaction
+      parameters:
+        - in: query
+          name: currency
+          schema:
+            type: string
+          required: true
+          description: Currency Name to convert transaction amount
+        - in: path
+          name: transactionId
+          schema:
+            type: string
+            format: UUID
+          required: true
+          description: ID of transaction to convert
+      responses:
+        200:
+          description: Transaction with its amount converted to the requested currency using an appropriate exchange rate.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/transactionResponse"
+        404:
+          description: No exchange rate found from 6 months prior to transaction date, could not convert.
+components:
+  schemas:
+    newTransactionRequest:
+      type: object
+      required:
+        - amount
+        - date
+        - description
+      properties:
+        amount: # a purchase amount in United States dollars. must be a valid positive amount rounded to the nearest cent
+          type: number
+          format: double
+          minimum: 0
+          x-field-extra-annotation: '@Positive'
+        date: # Transaction date: must be a valid date format
+          type: string
+          format: date-time
+        description: # Description: must not exceed 50 characters
+          type: string
+          maxLength: 50
+          x-field-extra-annotation: '@Size(max=50)'
+    transactionResponse:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/newTransactionRequest"
+      required:
+        - id
+      properties:
+        id: # Unique identifier: must uniquely identify the purchase
+          type: string
+          format: UUID

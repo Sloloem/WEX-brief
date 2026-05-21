@@ -1,0 +1,62 @@
+databaseChangeLog:
+  - changeSet:
+      author: pandrews
+      id: create-baseline-tables
+      changes:
+        - createTable:
+            tableName: transactions
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuidv7()
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: amount
+                  type: numeric(1000,2) #Liquibase won't pass 'money' through and 'currency' gets mapped to unconstrained numeric.  DB truncation is fallback protection anyway.
+                  # Otherwise we store cents as BigInt instead of fractional dollars, implicitly convert from dollars as specified.
+                  constraints:
+                    nullable: false
+              - column:
+                  name: transaction_date
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: recorded_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: exchange_rates
+            columns:
+              - column:
+                  name: currency
+                  type: varchar(25)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: effective_date
+                  type: date
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: exchange_rate
+                  type: number
+                  constraints:
+                    nullable: false
+              - column:
+                  name: recorded_at
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false

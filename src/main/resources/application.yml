@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: wex-transaction-db
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: never
+    properties:
+      org.quartz.jobStore:
+        isClustered: true
+        class: org.springframework.scheduling.quartz.LocalDataSourceJobStore
+        driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+  jackson:
+    deserialization:
+      FAIL_ON_NULL_FOR_PRIMITIVES: false
+
+management:
+  endpoints:
+    jmx:
+      exposure:
+        include: '*'
+    web:
+      exposure:
+        include: health,info,quartz,metrics,loggers,liquibase
+  tracing:
+    sampling:
+      probability: '1.0'
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://aspire-dashboard:18890/v1/traces
+  otlp:
+    metrics:
+      export:
+        url: http://aspire-dashboard:18890/v1/metrics

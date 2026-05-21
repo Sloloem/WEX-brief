@@ -1,0 +1,28 @@
+services:
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    ports:
+      - '4318:18890'
+      - '4317:18889'
+      - '18888:18888'
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=transactions'
+      - 'POSTGRES_PASSWORD=secret'
+      - 'POSTGRES_USER=myuser'
+    ports:
+      - '5432:5432'
+  TransactionDB:
+    image: 'transactiondb:LOCAL'
+    environment:
+      - "SPRING_PROFILES_ACTIVE=local"
+      - "BPL_JMX_ENABLED=true" #Enable for JMX monitoring on port 5000
+      - "BPL_DEBUG_ENABLED=true" #Enable for JVM debugging on port 8000
+    ports:
+      - '8080:8080' # HTTP
+      - '5000:5000' # JMX
+      - '8000:8000' # Debugger
+    depends_on:
+      - postgres
+      - aspire-dashboard

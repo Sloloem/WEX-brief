@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres/transactions
+    username: myuser
+    password: secret
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
