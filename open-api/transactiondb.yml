@@ -23,6 +23,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/transactionResponse"
+  /transaction/by-month/{year}-{month}:
+    get:
+      tags:
+        - transaction
+      operationId: getTransactionsByMonthAndYear
+      description: Returns the transactions, in USD, for the given month.
+      parameters:
+        - in: path
+          name: year
+          schema:
+            type: integer
+          required: true
+          description: Year
+        - in: path
+          name: month
+          schema:
+            type: integer
+            minimum: 1
+            max: 12
+          required: true
+          description: Month of year
+      responses:
+        200:
+          description: List of transactions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/transactionResponse"
   /transaction/{transactionId}:
     get:
       tags:

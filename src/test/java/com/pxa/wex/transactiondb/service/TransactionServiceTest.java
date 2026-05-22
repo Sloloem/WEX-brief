@@ -3,6 +3,7 @@ package com.pxa.wex.transactiondb.service;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,8 +12,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.Period;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Date;
@@ -269,5 +272,39 @@ public class TransactionServiceTest {
         when(mockJob.executeInternal(transaction.getDate())).thenReturn(Collections.EMPTY_LIST);
 
         assertThrows(NoSuchElementException.class, () -> transactionService.getAndConvertTransactionById(transactionId, currency));
+    }
+
+    @Test
+    void canMapListOfTransactionsByMonth() {
+        final UUID transactionId = UUID.ofEpochMillis(System.currentTimeMillis());
+
+        final Transaction transaction = Transaction.builder()
+            .id(transactionId)
+            .amount(100.00)
+            .date(OffsetDateTime.now().minus(6, ChronoUnit.WEEKS))
+            .description("A description of this transaction")
+            .recordedAt(Instant.now().minus(5, ChronoUnit.MINUTES))
+            .build();
+
+        final LocalDate lowerDate = LocalDate.of(transaction.getDate().getYear(), transaction.getDate().getMonth(), 1);
+        final LocalDate upperDate = lowerDate.plus(1, ChronoUnit.MONTHS);
+
+        when(mockTransactionRepository.findAllByDateBetween(lowerDate.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime(), upperDate.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime())).thenReturn(List.of(transaction));
+
+        final List<TransactionResponse> result = transactionService.getTransactionByDateRange(lowerDate, upperDate);
+
+        assertThat(result, iterableWithSize(1));
+    }
+
+    @Test
+    void noTransactionsReturnsEmptyList() {
+        final LocalDate lowerDate = LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth(), 1);
+        final LocalDate upperDate = lowerDate.plus(1, ChronoUnit.MONTHS);
+
+        when(mockTransactionRepository.findAllByDateBetween(lowerDate.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime(), upperDate.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime())).thenReturn(Collections.EMPTY_LIST);
+
+        final List<TransactionResponse> result = transactionService.getTransactionByDateRange(lowerDate, upperDate);
+
+        assertThat(result, iterableWithSize(0));
     }
 }

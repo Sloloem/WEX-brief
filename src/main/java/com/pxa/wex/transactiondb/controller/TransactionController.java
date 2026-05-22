@@ -1,5 +1,7 @@
 package com.pxa.wex.transactiondb.controller;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -43,5 +45,21 @@ public class TransactionController implements TransactionApiDelegate {
     @Override
     public ResponseEntity<TransactionResponse> getConvertedTransaction(final String currency, final UUID transactionId) {
         return ResponseEntity.ok(transactionService.getAndConvertTransactionById(transactionId, currency));
+    }
+
+    /**
+     * GET /transaction/by-month/{year}-{month}
+     * Returns the transactions, in USD, for the given month.
+     *
+     * @param year Year (required)
+     * @param month Month of year (required)
+     * @return List of transactions. (status code 200)
+     * @see TransactionApi#getTransactionsByMonthAndYear
+     */
+    @Override
+    public ResponseEntity<List<TransactionResponse>> getTransactionsByMonthAndYear(Integer year, Integer month) {
+        final LocalDate lowerDate = LocalDate.of(year, month, 1);
+        final LocalDate upperDate = lowerDate.plusMonths(1);
+        return ResponseEntity.ok(transactionService.getTransactionByDateRange(lowerDate, upperDate));
     }
 }

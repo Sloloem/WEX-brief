@@ -3,6 +3,8 @@ package com.pxa.wex.transactiondb.service;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.Period;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -90,5 +92,9 @@ public class TransactionService {
         response.setAmount(Math.round(response.getAmount()*exchangeRate.getExchangeRate()*100)/100.0);
 
         return response;
+    }
+
+    public List<TransactionResponse> getTransactionByDateRange(final LocalDate lowerDate, final LocalDate upperDate) {
+        return transactionRepository.findAllByDateBetween(lowerDate.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime(), upperDate.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime()).stream().map(transaction -> mapper.fromEntity(transaction)).toList();
     }
 }
